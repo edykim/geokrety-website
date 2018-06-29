@@ -75,4 +75,27 @@ class LDHelperTest extends TestCase {
 
         $this->assertSame($expectedResult, $ldJSONWebSite);
     }
+
+    public function test_generate_ldjson_konkret() {
+        // GIVEN
+        $ldHelper = new LDHelper('geokrety.org', 'https://geokrety.org', 'https://cdn.geokrety.org/images/banners/geokrety.png');
+        $konkret = new \Geokrety\Domain\Konkret();
+        $konkret->name = "konkret UT";
+        $konkret->description = "konkret unit test";
+
+        // WHEN
+        $ldJSONWebSite = $ldHelper->helpKonkret($konkret);
+
+        // THEN
+        $expectedResult = '<script type="application/ld+json">'
+        .'{'
+        .'"@context":"http:\/\/schema.org",'
+        .'"@type":"Sculpture",'
+        .'"about":"konkret unit test",'
+        .'"name":"konkret UT"'
+        .'}'
+        .'</script>';
+
+        $this->assertSame($expectedResult, $ldJSONWebSite);
+    }
 }

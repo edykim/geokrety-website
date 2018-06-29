@@ -82,4 +82,19 @@ class LDHelper {
 
         return $context->generate();
     }
+
+    /**
+     * schema used: http://schema.org/Sculpture
+     */
+    public function helpKonkret($konkret) {
+        $context = LDGeneratorFactory::createLdContext('Sculpture', [
+            'about' => $konkret->description,
+            'url' => $konkret->url,
+            'image' => $konkret->imageUrl,
+            'name' => $konkret->name,
+            'keywords' => $konkret->keywords
+        ]);
+
+        return $context->generate();
+    }
 }
