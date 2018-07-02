@@ -3,9 +3,9 @@
 use PHPUnit\Framework\TestCase;
 
 class LDHelperTest extends TestCase {
-    public const LD_JSON_SCRIPT_START = '<script type="application/ld+json">';
-    public const LD_JSON_SCRIPT_END = '</script>';
-    public const KEYWORDS_EXAMPLE = 'this,is,a,test';
+    const LD_JSON_SCRIPT_START = '<script type="application/ld+json">';
+    const LD_JSON_SCRIPT_END = '</script>';
+    const KEYWORDS_EXAMPLE = 'this,is,a,test';
 
     public function test_generate_ld_json_article() {
         // GIVEN
