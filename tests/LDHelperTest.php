@@ -3,7 +3,11 @@
 use PHPUnit\Framework\TestCase;
 
 class LDHelperTest extends TestCase {
-    public function test_generate_ldjson_article() {
+    public const LD_JSON_SCRIPT_START = '<script type="application/ld+json">';
+    public const LD_JSON_SCRIPT_END = '</script>';
+    public const KEYWORDS_EXAMPLE = 'this,is,a,test';
+
+    public function test_generate_ld_json_article() {
         // GIVEN
         $ldHelper = new LDHelper('geokrety.org', 'https://geokrety.org', 'https://cdn.geokrety.org/images/banners/geokrety.png');
         $testDate = date('c', 12345000);
@@ -14,7 +18,7 @@ class LDHelperTest extends TestCase {
             'UTest generation',
             'http://exemple.com/article.html',
             'http://exemple.com/image.jpg',
-            'this,is,a,test',
+            self::KEYWORDS_EXAMPLE,
             'fr',
             $testDate,
             $testDate,
@@ -22,7 +26,7 @@ class LDHelperTest extends TestCase {
             );
 
         // THEN
-        $expectedResult = '<script type="application/ld+json">'
+        $expectedResult = self::LD_JSON_SCRIPT_START
         .'{'
         .'"@context":"http:\/\/schema.org",'
         .'"@type":"Article",'
@@ -31,7 +35,7 @@ class LDHelperTest extends TestCase {
         .'"image":"http:\/\/exemple.com\/image.jpg",'
         .'"publisher":{"@type":"Organization","name":"geokrety.org","url":"https:\/\/geokrety.org",'
           .'"logo":{"@type":"ImageObject","url":"https:\/\/cdn.geokrety.org\/images\/banners\/geokrety.png"}},'
-        .'"keywords":"this,is,a,test",'
+        .'"keywords":"'.self::KEYWORDS_EXAMPLE.'",'
         .'"inLanguage":"fr",'
         .'"dateModified":"1970-05-23T21:10:00+00:00",'
         .'"datePublished":"1970-05-23T21:10:00+00:00",'
@@ -39,12 +43,12 @@ class LDHelperTest extends TestCase {
         .'"mainEntityOfPage":"http:\/\/exemple.com\/",'
         .'"headline":"this is a test"'
         .'}'
-        .'</script>';
+        .self::LD_JSON_SCRIPT_END;
 
         $this->assertSame($expectedResult, $ldJSONArticle);
     }
 
-    public function test_generate_ldjson_website() {
+    public function test_generate_ld_json_website() {
         // GIVEN
         $ldHelper = new LDHelper('geokrety.org', 'https://geokrety.org', 'https://cdn.geokrety.org/images/banners/geokrety.png');
 
@@ -56,11 +60,11 @@ class LDHelperTest extends TestCase {
             'https://exemple/images/logo.jpg',
             'My WebSite',
             'https://exemple.com',
-            'this,is,a,test'
+            self::KEYWORDS_EXAMPLE
             );
 
         // THEN
-        $expectedResult = '<script type="application/ld+json">'
+        $expectedResult = self::LD_JSON_SCRIPT_START
         .'{'
         .'"@context":"http:\/\/schema.org",'
         .'"@type":"WebSite",'
@@ -69,32 +73,57 @@ class LDHelperTest extends TestCase {
         .'"image":"https:\/\/exemple\/images\/logo.jpg",'
         .'"name":"My WebSite",'
         .'"url":"https:\/\/exemple.com",'
-        .'"keywords":"this,is,a,test"'
+        .'"keywords":"'.self::KEYWORDS_EXAMPLE.'"'
         .'}'
-        .'</script>';
+        .self::LD_JSON_SCRIPT_END;
 
         $this->assertSame($expectedResult, $ldJSONWebSite);
     }
 
-    public function test_generate_ldjson_konkret() {
+    public function test_generate_ld_json_konkret() {
         // GIVEN
         $ldHelper = new LDHelper('geokrety.org', 'https://geokrety.org', 'https://cdn.geokrety.org/images/banners/geokrety.png');
         $konkret = new \Geokrety\Domain\Konkret();
-        $konkret->name = "konkret UT";
-        $konkret->description = "konkret unit test";
+        $konkret->name = 'konkret UT';
+        $konkret->description = 'konkret unit test';
+        $konkret->url = 'https://example.com/konkret.php';
+        $konkret->author = 'Jojo';
+        $konkret->authorUrl = 'https://example.com/author.php?name=Jojo';
+        $konkret->datePublished = date('c', 12345000);
+        $konkret->imageUrl = 'https://example.com/konkret.jpg';
+        $konkret->keywords = self::KEYWORDS_EXAMPLE;
+        $konkret->ratingCount = 10;
+        $konkret->ratingAvg = 2.4;
+
+        $log1 = new \Geokrety\Domain\KonkretLog('George', 'https://example.com/author.php?name=George', 'log1 content', date('c', 12345000));
+        $log2 = new \Geokrety\Domain\KonkretLog('Robert', 'https://example.com/author.php?name=Robert', 'log2 content here', date('c', 12345000));
+
+        $konkretLogs = array($log1, $log2);
+
+        $konkret->commentCount = 2;
+        $konkret->konkretLogs = $konkretLogs;
 
         // WHEN
         $ldJSONWebSite = $ldHelper->helpKonkret($konkret);
 
         // THEN
-        $expectedResult = '<script type="application/ld+json">'
+        $expectedResult = self::LD_JSON_SCRIPT_START
         .'{'
         .'"@context":"http:\/\/schema.org",'
         .'"@type":"Sculpture",'
         .'"about":"konkret unit test",'
-        .'"name":"konkret UT"'
+        .'"image":"https:\/\/example.com\/konkret.jpg",'
+        .'"name":"konkret UT",'
+        .'"url":"https:\/\/example.com\/konkret.php",'
+        .'"author":{"@type":"Person","name":"Jojo"},'
+        .'"publisher":{"@type":"Organization","name":"geokrety.org","url":"https:\/\/geokrety.org","logo":{"@type":"ImageObject","url":"https:\/\/cdn.geokrety.org\/images\/banners\/geokrety.png"}},'
+        .'"keywords":"'.self::KEYWORDS_EXAMPLE.'",'
+        .'"datePublished":"1970-05-23T21:10:00+00:00",'
+        .'"aggregateRating":{"@type":"AggregateRating","ratingValue":10,"bestRating":5,"worstRating":1,"ratingCount":2.4}'
         .'}'
-        .'</script>';
+        .self::LD_JSON_SCRIPT_END;
+
+        // TODO: comments
 
         $this->assertSame($expectedResult, $ldJSONWebSite);
     }

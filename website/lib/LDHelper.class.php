@@ -26,14 +26,23 @@ class LDHelper {
             'url' => $geokretyLogoUrl,
         ]);
         */
-        $this->geokretyPerson = LDGeneratorFactory::createLdContext('Person', [
-            'name' => $geokretyName,
-        ]);
-        $this->geokretyOrganization = LDGeneratorFactory::createLdContext('Organization', [
-            'name' => $geokretyName,
-            'url' => $geokretyUrl,
-            'logo' => $this->geokretyLogo,
-        ]);
+        $this->geokretyPerson = $this->createAuthor($geokretyName, $geokretyUrl);
+        $this->geokretyOrganization = $this->createOrganization($geokretyName, $geokretyUrl);
+    }
+
+    public function createOrganization($orgName, $orgUrl) {
+        return LDGeneratorFactory::createLdContext('Organization', [
+                'name' => $orgName,
+                'url' => $orgUrl,
+                'logo' => $this->geokretyLogo,
+            ]);
+    }
+
+    public function createAuthor($authorName, $authorUrl) {
+        return LDGeneratorFactory::createLdContext('Person', [
+                'name' => $authorName,
+            ]);
+        // possible improvement: add 'sameAs' field in Torann Project
     }
 
     /**
@@ -83,16 +92,30 @@ class LDHelper {
         return $context->generate();
     }
 
+    public function createAggregateRating($ratingValue, $ratingCount) {
+        return LDGeneratorFactory::createLdContext('AggregateRating', [
+            'reviewCount' => null,
+            'ratingValue' => $ratingValue,
+            'bestRating' => 5,
+            'worstRating' => 1,
+            'ratingCount' => $ratingCount,
+            ]);
+    }
+
     /**
-     * schema used: http://schema.org/Sculpture
+     * schema used: http://schema.org/Sculpture.
      */
     public function helpKonkret($konkret) {
         $context = LDGeneratorFactory::createLdContext('Sculpture', [
-            'about' => $konkret->description,
-            'url' => $konkret->url,
-            'image' => $konkret->imageUrl,
             'name' => $konkret->name,
-            'keywords' => $konkret->keywords
+            'url' => $konkret->url,
+            'author' => $this->createAuthor($konkret->author, $konkret->authorUrl),
+            'datePublished' => $konkret->datePublished,
+            'image' => $konkret->imageUrl,
+            'keywords' => $konkret->keywords,
+            'about' => $konkret->description,
+            'publisher' => $this->geokretyOrganization,
+            'aggregateRating' => $this->createAggregateRating($konkret->ratingCount, $konkret->ratingAvg),
         ]);
 
         return $context->generate();

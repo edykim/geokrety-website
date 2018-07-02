@@ -2,25 +2,26 @@
 
 namespace JsonLd\ContextTypes;
 
-class Sculpture extends AbstractContext
-{
+class Sculpture extends AbstractContext {
     /**
-     * Property structure
+     * Property structure.
      *
      * @var array
      */
     protected $structure = [
-        'about'    => null,
+        'about' => null,
         'headline' => null,
-        'image'    => null,
-        'name'     => null,
-        'url'      => null,
+        'image' => null,
+        'name' => null,
+        'url' => null,
+        'author' => Person::class,
         'publisher' => Organization::class,
         'keywords' => null,
         'inLanguage' => null,
         'dateCreated' => null,
         'dateModified' => null,
         'datePublished' => null,
-        'sameAs'   => null,
+        'sameAs' => null,
+        'aggregateRating' => AggregateRating::class,
     ];
 }
