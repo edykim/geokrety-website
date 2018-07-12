@@ -2,7 +2,7 @@
 
 namespace JsonLd\ContextTypes;
 
-class Sculpture extends AbstractContext {
+class Comment extends AbstractContext {
     /**
      * Property structure.
      *
@@ -22,8 +22,9 @@ class Sculpture extends AbstractContext {
         'dateModified' => null,
         'datePublished' => null,
         'sameAs' => null,
+        'text' => null,
         'aggregateRating' => AggregateRating::class,
         'commentCount' => null,
-        'comment' => Comment::class,
+        'comment' => Comment::class, // or ListItem
     ];
 }

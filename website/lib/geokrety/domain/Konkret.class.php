@@ -13,6 +13,5 @@ class Konkret {
     public $keywords;
     public $ratingCount;
     public $ratingAvg;
-    public $commentCount;
     public $konkretLogs;
 }

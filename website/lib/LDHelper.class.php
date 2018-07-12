@@ -106,7 +106,11 @@ class LDHelper {
      * schema used: http://schema.org/Sculpture.
      */
     public function helpKonkret($konkret) {
-        $context = LDGeneratorFactory::createLdContext('Sculpture', [
+        // root graph
+        $graphContent = [];
+
+        // sculpture attributes
+        $sculptureContent = [
             'name' => $konkret->name,
             'url' => $konkret->url,
             'author' => $this->createAuthor($konkret->author, $konkret->authorUrl),
@@ -115,9 +119,73 @@ class LDHelper {
             'keywords' => $konkret->keywords,
             'about' => $konkret->description,
             'publisher' => $this->geokretyOrganization,
-            'aggregateRating' => $this->createAggregateRating($konkret->ratingCount, $konkret->ratingAvg),
-        ]);
+            'aggregateRating' => $this->createAggregateRating($konkret->ratingAvg, $konkret->ratingCount),
+        ];
 
-        return $context->generate();
+
+        // comments
+        if (isset($konkret->konkretLogs) && is_array($konkret->konkretLogs)) {
+            $allComments = [];
+            $sculptureContent['commentCount'] = count($konkret->konkretLogs);
+            foreach ($konkret->konkretLogs as &$konkretLog) {
+                $commentContent = [
+                    'author' => $this->createAuthor($konkretLog->authorName, $konkretLog->authorUrl),
+                    'text' => $konkretLog->text,
+                    'dateCreated' => $konkretLog->dateCreated
+                ];
+                $comment = LDGeneratorFactory::createLdContext('Comment',$commentContent);
+                array_push($allComments, $comment->getProperties());
+            }
+            $sculptureContent['comment'] = $allComments;
+        }
+
+        $sculpture = LDGeneratorFactory::createLdContext('Sculpture', $sculptureContent);
+        return $sculpture ->generate();
+    }
+
+    /**
+     * schema used: http://schema.org/Sculpture.
+     */
+    public function helpKonkretGraph($konkret) {
+        // root graph
+        $graphContent = [];
+
+        // sculpture attributes
+        $sculptureContent = [
+            '@id' => $konkret->url,
+            'name' => $konkret->name,
+            'url' => $konkret->url,
+            'author' => $this->createAuthor($konkret->author, $konkret->authorUrl),
+            'datePublished' => $konkret->datePublished,
+            'image' => $konkret->imageUrl,
+            'keywords' => $konkret->keywords,
+            'about' => $konkret->description,
+            'publisher' => $this->geokretyOrganization,
+            'aggregateRating' => $this->createAggregateRating($konkret->ratingAvg, $konkret->ratingCount),
+        ];
+
+
+        // comments
+        // https://stackoverflow.com/questions/51179604/representing-repeating-attributes-in-json-ld
+        if (isset($konkret->konkretLogs) && is_array($konkret->konkretLogs)) {
+            $sculptureContent['commentCount'] = count($konkret->konkretLogs);
+            $i=0;
+            foreach ($konkret->konkretLogs as &$konkretLog) {
+                $commentContent = [
+                    '@reverse' => ['comment' => ['@id' => $konkret->url] ], // is a konkret comment
+                    '@id' => 'Comment-' . $i++,
+                    'author' => $this->createAuthor($konkretLog->authorName, $konkretLog->authorUrl),
+                    'text' => $konkretLog->text,
+                    'dateCreated' => $konkretLog->dateCreated,
+                ];
+                $comment = LDGeneratorFactory::createLdContext('Comment',$commentContent);
+                array_push($graphContent, $comment->getProperties());
+            }
+        }
+        $sculpture = LDGeneratorFactory::createLdContext('Sculpture', $sculptureContent);
+        array_push($graphContent, $sculpture->getProperties());
+
+        $graph = LDGeneratorFactory::createLdContext('Graph', $graphContent);
+        return $graph->generate();
     }
 }

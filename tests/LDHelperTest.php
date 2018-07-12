@@ -100,11 +100,11 @@ class LDHelperTest extends TestCase {
 
         $konkretLogs = array($log1, $log2);
 
-        $konkret->commentCount = 2;
         $konkret->konkretLogs = $konkretLogs;
 
         // WHEN
         $ldJSONWebSite = $ldHelper->helpKonkret($konkret);
+        $ldJSONGraphWebSite = $ldHelper->helpKonkretGraph($konkret);
 
         // THEN
         $expectedResult = self::LD_JSON_SCRIPT_START
@@ -119,12 +119,82 @@ class LDHelperTest extends TestCase {
         .'"publisher":{"@type":"Organization","name":"geokrety.org","url":"https:\/\/geokrety.org","logo":{"@type":"ImageObject","url":"https:\/\/cdn.geokrety.org\/images\/banners\/geokrety.png"}},'
         .'"keywords":"'.self::KEYWORDS_EXAMPLE.'",'
         .'"datePublished":"1970-05-23T21:10:00+00:00",'
-        .'"aggregateRating":{"@type":"AggregateRating","ratingValue":10,"bestRating":5,"worstRating":1,"ratingCount":2.4}'
-        .'}'
+        .'"aggregateRating":{"@type":"AggregateRating","ratingValue":2.4,"bestRating":5,"worstRating":1,"ratingCount":10},'
+        .'"commentCount":2,'
+        .'"comment":[{'
+                              .'"@context":"http:\/\/schema.org",'
+                              .'"@type":"Comment",'
+                              .'"author":{'
+                    				.'"@type":"Person",'
+                    				.'"name":"George"'
+                    			.'},'
+                    			.'"dateCreated":"1970-05-23T21:10:00+00:00",'
+                    			.'"text":"log1 content"'
+                    		.'},{'
+                    			.'"@context":"http:\/\/schema.org",'
+                    			.'"@type":"Comment",'
+                    			.'"author":{'
+                    				.'"@type":"Person",'
+                    				.'"name":"Robert"'
+                    			.'},'
+                    			.'"dateCreated":"1970-05-23T21:10:00+00:00",'
+                    			.'"text":"log2 content here"'
+                    	    .'}'
+        .']}'
         .self::LD_JSON_SCRIPT_END;
 
-        // TODO: comments
+        // miss @id and revert
+        $expectedGraphResult = self::LD_JSON_SCRIPT_START
+        .'{'
+          	.'"@context":"http:\/\/schema.org",'
+          	.'"@graph":[{'
+          			.'"@context":"http:\/\/schema.org",'
+          			.'"@type":"Comment",'
+          			.'"author":{"@type":"Person","name":"George"},'
+          			.'"dateCreated":"1970-05-23T21:10:00+00:00",'
+          			.'"text":"log1 content"'
+          		.'},{'
+          			.'"@context":"http:\/\/schema.org",'
+          			.'"@type":"Comment",'
+          			.'"author":{"@type":"Person","name":"Robert"},'
+          			.'"dateCreated":"1970-05-23T21:10:00+00:00",'
+          			.'"text":"log2 content here"'
+          		.'},{'
+          			.'"@context":"http:\/\/schema.org",'
+          			.'"@type":"Sculpture",'
+          			.'"about":"konkret unit test",'
+          			.'"image":"https:\/\/example.com\/konkret.jpg",'
+          			.'"name":"konkret UT",'
+          			.'"url":"https:\/\/example.com\/konkret.php",'
+          			.'"author":{"@type":"Person","name":"Jojo"},'
+          			.'"publisher":{'
+          				.'"@type":"Organization",'
+          				.'"name":"geokrety.org",'
+          				.'"url":"https:\/\/geokrety.org",'
+          				.'"logo":{'
+          					.'"@type":"ImageObject",'
+          					.'"url":"https:\/\/cdn.geokrety.org\/images\/banners\/geokrety.png"'
+          				.'}'
+          			.'},'
+          			.'"keywords":"this,is,a,test",'
+          			.'"datePublished":"1970-05-23T21:10:00+00:00",'
+          			.'"aggregateRating":{'
+          				.'"@type":"AggregateRating",'
+          				.'"ratingValue":2.4,'
+          				.'"bestRating":5,'
+          				.'"worstRating":1,'
+          				.'"ratingCount":10'
+          			.'},'
+          			.'"commentCount":2'
+          		.'}'
+          	.']'
+         .'}'
+        .self::LD_JSON_SCRIPT_END;
+
 
         $this->assertSame($expectedResult, $ldJSONWebSite);
+        $this->assertSame($expectedGraphResult, $ldJSONGraphWebSite);
+
+        // var_dump($expectedResult);
     }
 }
